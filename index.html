@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Super Chat temps réel !</title>
+    <style>
+        #zone_chat strong {
+
+            color: black;
+            background-color: #66FFCC;
+            padding: 2px;
+        }
+
+        body {
+            background-color: white;
+        }
+
+        h6 {
+            color:red;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+</head>
+
+<body>
+    <h1>Le super Chat temps réel !</h1>
+    <p id="demo"></p>
+    <div class="input-field col s6"">
+        <form action="/" method="post" id="formulaire_chat">
+            <input type="text" name="message" id="message" placeholder="Votre message..." size="50" autofocus />
+            <input type="submit" id="envoi_message" value="Envoyer" />
+        </form>
+    </div>
+    <section id="zone_chat">
+
+    </section>
+
+
+    <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"
+    ></script>
+    <script>
+        var compte_a = 0;
+        var compte_b = 0;
+        var yolo = 0;
+        var countDownDate = new Date("Sep 5, 2018 15:37:25").getTime();
+        var now = new Date().getTime();
+        var distance = countDownDate - now;
+        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        var socket = io.connect('http://localhost:8080');
+        var pseudo = prompt('Quel est votre pseudo ?');
+        socket.emit('nouveau_client', pseudo);
+        document.title = pseudo + ' - ' + document.title;
+
+        socket.on('message', function(data) {
+            insereMessage(data.pseudo, data.message)
+        })
+
+        socket.on('nouveau_client', function(pseudo) {
+            $('#zone_chat').prepend('<p><em>' + pseudo + ' a rejoint le Chat !</em></p>');
+        })
+        var y = setInterval(function() {
+         if (distance === 1) {
+            clearInterval(x);
+            document.getElementById("demo").innerHTML = "EXPIRED";
+        }
+
+    }, 1000)
+
+        $('#formulaire_chat').submit(function () {
+            var biere = 0;
+            var message = $('#message').val();
+            socket.emit('message', message);
+
+            if(message.indexOf("/nickname") === 0){
+                var ancien_pseudo = pseudo
+                var pseudo1 = message.split("/nickname");
+                insereMessage(pseudo1[1], ancien_pseudo + " a changé de pseudo en " + pseudo1[1]); 
+                $('#message').val('').focus();
+                return false;
+            }
+
+            else if (message.indexOf("/vote") === 0){
+                yolo = 1;
+
+                var myArray = ['Quelle est la ville ou il ya la meilleure connexion internet? A: Paris  B: Lyon', 'quel est le responsable pedago le plus gentil? A: Thomas   B: Paul', 'Qui est le plus absent de la WAC? A: Enric  B: Jerry', 'Qui gagnerai : A:Une Sophie Viger enragée   B: trois grizzlis adultes?', 'Qui finira son année avec le plus de credit A:Mika  B:Charles', 'Qui finira lannée avec le moins de crédits? A: Mika  B: Charles', 'Qui ne finira pas lannée? A: Personne  B: Tout le monde', 'Qui gagnerai: A: Un iphone ou 3 Alcatels sous cotés?', 'Qui finirai en premier son assiette: Jolan ou Alison?', 'Qui gagnerai: A: Alison le ventre vide  B: Emilie sans sommeil'];
+                console.log(myArray[Math.floor(Math.random() * 9) + 0 ])
+
+                insereMessage(pseudo + ' a lancé un vote!', myArray[Math.floor(Math.random() * 9) + 0 ]); 
+                $('#message').val('').focus();
+
+                var x = setInterval(function() {
+                    var now = new Date().getTime();
+                    var distance = countDownDate - now;
+                    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    document.getElementById("demo").innerHTML = seconds + "s ";
+
+                    if (distance === 1) {
+                        clearInterval(x);
+                        document.getElementById("demo").innerHTML = "EXPIRED";
+                    }
+                }, 1000)
+                return false;
+            }
+
+            else if (message.indexOf("/beer") === 0){
+                var message1 = message.split("/beer");
+                insereMessage(pseudo, message1 + ' hic'); 
+                $('#message').val('').focus();
+                return false;
+            }
+
+            else if (message.indexOf("/a") === 0){
+                if (yolo === 1) {
+                    compte_a ++;
+                    console.log(compte_a);
+                    insereMessage(pseudo, 'a voté la reponse A'); 
+                    $('#message').val('').focus();
+                    return false;
+                }
+                else {
+                   insereMessage(pseudo, 'pas de vote en cours'); 
+                   $('#message').val('').focus();
+                   return false;   
+               }
+           }
+
+           else if (message.indexOf("/b") === 0){
+            if (yolo === 1) {
+                compte_b ++;
+                console.log(compte_b);
+                insereMessage(pseudo, 'a voté la reponse B'); 
+                $('#message').val('').focus();
+                return false;
+            }
+            else {
+               insereMessage(pseudo, 'pas de vote en cours'); 
+               $('#message').val('').focus();
+               return false;   
+           }
+       }
+
+       else {
+
+        insereMessage(pseudo, message); 
+        $('#message').val('').focus();
+        return false;
+    }
+});
+
+        function insereMessage(pseudo, message) {
+            $('#zone_chat').prepend('<p><strong>' + pseudo + '</strong> ' + '<h6>' + message + '</h6>' + '</p>');
+        }
+    </script>
+</body>
+</html>
